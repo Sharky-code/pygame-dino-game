@@ -1,13 +1,14 @@
 #Add screen stretching later
 import pygame
-
 width, height = 400, 200
 frameRate = 60
 
 #Initizalize and configure basic pygame stuff
 pygame.font.init()
 endGame = False
-screen = pygame.display.set_mode((width, height))
+#this doens't work. I think i should make a seperate fake screen and blit it to the real screen
+screen = pygame.display.set_mode((width, height), pygame.RESIZABLE|pygame.DOUBLEBUF|pygame.SCALED)
+
 pygame.display.set_caption("Dinosaur Jumping Game")
 image = pygame.image.load(r"player.png")
 
@@ -20,10 +21,14 @@ class gameLogic:
         self.objectLocation = [width / 4 - self.objectDimension[0], height / 2 - self.objectDimension[1]]
         self.frameRate = frameRate
         self.gravity = -10
-        self.groundLevel = [0, 200] #the last value is reverved for later :)
+        self.groundLevel = [0, 200] #the empty value is reverved for later :)
         self.onGround = False
 
     def playerGravity(self) -> None:
+        """
+        The objectLocation here is reversed. You have to reverse it again
+        The ground too.
+        """
         self.objectLocation[1] += self.objectVelocity[1] / self.frameRate
         self.objectLocation[0] += self.objectVelocity[0] / self.frameRate
 
@@ -32,9 +37,8 @@ class gameLogic:
             #you can use for loop but I thought it would be less laggier idk
             self.objectLocation[1] += self.objectVelocity[1] / self.frameRate
             self.objectLocation[0] += self.objectVelocity[0] / self.frameRate
-
-            The position thing and the groundLevel is messed up. I'll change it later
             """
+
             self.objectVelocity[1] += self.gravity
             self.onGround = False
         else: 
@@ -52,7 +56,7 @@ print(object.objectLocation)
 object.objectVelocity = [0, 100]
 
 
-while endGame == False:
+while not endGame:
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT: endGame = True #makes you able to close the script (don't remove this)
     
