@@ -29,7 +29,7 @@ class gameLogic:
         self.enemyList = {'dino' : [], 'bird' : []}
         self.previousTimeEnemy = 0
         #The first item was minium time
-        self.randomRangeEnemy = [0.3, 2]
+        self.randomRangeEnemy = [0.4, 2]
         self.randomTimeFrameEnemy = random.uniform(self.randomRangeEnemy[0], self.randomRangeEnemy[1])
         self.speed = 2.5
 
@@ -37,17 +37,15 @@ class gameLogic:
         """
         The objectLocation here is reversed. You have to reverse it again
         The ground too.
+
+        you can use for loop but I thought it would be less laggier idk
+        self.objectLocation[1] += self.objectVelocity[1] / self.frameRate
+        self.objectLocation[0] += self.objectVelocity[0] / self.frameRate
         """
         self.objectLocation[1] += self.objectVelocity[1] / self.frameRate
         self.objectLocation[0] += self.objectVelocity[0] / self.frameRate
 
         if self.objectLocation[1] > self.groundLevel[1] + self.objectDimension[1]:
-            """
-            #you can use for loop but I thought it would be less laggier idk
-            self.objectLocation[1] += self.objectVelocity[1] / self.frameRate
-            self.objectLocation[0] += self.objectVelocity[0] / self.frameRate
-            """
-
             self.objectVelocity[1] += self.gravity
             self.onGround = False
         else: 
@@ -75,7 +73,7 @@ class gameLogic:
         """
 
         if (pygame.time.get_ticks() - self.previousTimeEnemy) > self.randomTimeFrameEnemy * 1000:
-            self.enemyList[list(self.enemyList.keys())[random.randrange(0, 1)]].append(width)
+            self.enemyList[list(self.enemyList.keys())[random.randrange(0, 1)]].append([random.randint(1,3), width])
             self.previousTimeEnemy = copy.deepcopy(pygame.time.get_ticks())
             self.randomTimeFrameEnemy = random.uniform(self.randomRangeEnemy[0], self.randomRangeEnemy[1])
 
@@ -85,10 +83,10 @@ class gameLogic:
         for y in list(self.enemyList.keys()):
             for x in range(len(self.enemyList[y])):
                 try: 
-                    pygame.draw.rect(screen, (10, 10, 10), pygame.Rect(self.enemyList[y][x], 100 - 10, 10, 10)) 
-                    self.enemyList[y][x] -= self.speed
+                    #pygame.draw.rect(screen, (10, 10, 10), pygame.Rect(self.enemyList[y][x][1], 100 - 10, 10, 10)) 
+                    self.enemyList[y][x][1] -= self.speed
 
-                    if self.enemyList[y][x] < -50:
+                    if self.enemyList[y][x][1] < -50:
                         self.enemyList[y].pop(x)
                 except: pass 
 
@@ -106,8 +104,6 @@ while not endGame:
         object.objectVelocity = [0,200]
 
     screen.fill((255,255,255)) #fill the screen with the RGB color
-    #hitbox visualizer:
-    #pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(object.objectLocation[0], height - object.objectLocation[1] + 100, object.objectDimension[0], object.objectDimension[1]))
 
     object.drawBackground()
     object.playerGravity()
@@ -120,8 +116,9 @@ while not endGame:
     for y in list(object.enemyList.keys()):
         for x in object.enemyList[y]:
             #just for testing I'll add the variable for it after. It also doesn't change if you change the background
-            pygame.draw.rect(screen, (10, 10, 10), pygame.Rect(x, 100 - 10, 10, 10)) 
+            pygame.draw.rect(screen, (10, 10, 10), pygame.Rect(x[1], 100 - (10 if x[0] == 1 else 12 if x[0] == 2 else 15), 10, 10 if x[0] == 1 else 12 if x[0] == 2 else 15)) 
+            print(x)
 
     pygame.time.Clock().tick(frameRate) #should cap the fps
-    pygame.display.update()
-    #pygame.display.update() only updates parts of a screen
+    pygame.display.flip()
+    #pygame.display.update()
