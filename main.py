@@ -1,14 +1,16 @@
 """
 features to add later:
-- add long jump and short jump
+- add long jump and short jump (DONE)
 - add ducking
 - add background scrolling
 - add animations
+- easily change FLOOR level
 """
 
 import pygame, random, copy
 width, height = 400, 200
 frameRate = 60
+pauseGame = False
 
 #Initizalize and configure basic pygame stuff
 pygame.font.init()
@@ -18,7 +20,7 @@ screen = pygame.display.set_mode((width, height), pygame.RESIZABLE|pygame.DOUBLE
 
 pygame.display.set_caption("Dinosaur Jumping Game")
 image = pygame.image.load(r"player.png")
-
+runningImage = pygame.image.load(r"runplayer.png")
 
 class gameLogic:
     """Controls the player object, including the gravity"""
@@ -26,6 +28,7 @@ class gameLogic:
     def __init__(self) -> None:
         self.previousTimeSpace = 0
         self.spacePressed = False
+        self.tickTimer = 0
 
         self.objectDimension = [10, 25] #object dimension -> width, height 
         self.objectVelocity = [0, 0]
@@ -43,23 +46,28 @@ class gameLogic:
         self.randomTimeFrameEnemy = random.uniform(self.randomRangeEnemy[0], self.randomRangeEnemy[1])
         self.speed = 2.5
 
+    def ticks(self) -> int:
+        return 10
+
     def detectClick(self) -> None:
+        """
+        I just modified my old code lol
+        """
+
         if pygame.key.get_pressed()[pygame.K_UP] or pygame.key.get_pressed()[pygame.K_SPACE]:
             if not self.spacePressed:
                 self.previousTimeSpace = copy.deepcopy(pygame.time.get_ticks())
+
             self.spacePressed = True
-            print(abs(self.previousTimeSpace - pygame.time.get_ticks()))
-            if abs(self.previousTimeSpace - pygame.time.get_ticks()) > 50 and self.onGround:
+            
+            if abs(self.previousTimeSpace - pygame.time.get_ticks()) > 70 and self.onGround:
                 self.objectVelocity = [0, 220]
-            #elif self.onGround:
-            #    self.objectVelocity = [0, 170]
         else:
             if self.spacePressed:
                 self.spacePressed = False
+
                 if self.onGround:
                     self.objectVelocity = [0, 170]
-
-
 
     def playerGravity(self) -> None:
         """
@@ -70,6 +78,7 @@ class gameLogic:
         self.objectLocation[1] += self.objectVelocity[1] / self.frameRate
         self.objectLocation[0] += self.objectVelocity[0] / self.frameRa False
         """
+
         self.objectLocation[1] += self.objectVelocity[1] / self.frameRate
         self.objectLocation[0] += self.objectVelocity[0] / self.frameRate
 
@@ -107,20 +116,29 @@ class gameLogic:
 
         self.speed += 0.0001 #put this to the if loop above if you want
 
-        print(self.enemyList)
         for y in list(self.enemyList.keys()):
             for x in range(len(self.enemyList[y])):
                 try: 
-                    #pygame.draw.rect(screen, (10, 10, 10), pygame.Rect(self.enemyList[y][x][1], 100 - 10, 10, 10)) 
+                    pygame.draw.rect(screen, (10, 10, 10), pygame.Rect(self.enemyList[y][x][1], 100 - (10 if self.enemyList[y][x][0] == 1 else 12 if self.enemyList[y][x][0] == 2 else 15), 10, 10 if self.enemyList[y][x][0] == 1 else 12 if self.enemyList[y][x][0] == 2 else 15)) 
+
                     self.enemyList[y][x][1] -= self.speed
 
                     if self.enemyList[y][x][1] < -50:
                         self.enemyList[y].pop(x)
                 except: pass
 
+    def winLose(self):
+        global pauseGame
+
+        self.objectHitbox = pygame.Rect(self.objectLocation[0] + 1, height - self.objectLocation[1] + 100 + 1, self.objectDimension[0] - 2, self.objectDimension[1] - 2)
+
+        for y in list(self.enemyList.keys()):
+            for x in range(len(self.enemyList[y])):
+                if self.objectHitbox.colliderect(pygame.Rect(self.enemyList[y][x][1], 100 - (10 if self.enemyList[y][x][0] == 1 else 12 if self.enemyList[y][x][0] == 2 else 15), 10, 10 if self.enemyList[y][x][0] == 1 else 12 if self.enemyList[y][x][0] == 2 else 15)):
+                    pauseGame = True
+
 
 object = gameLogic()
-print(object.objectLocation)
 object.objectVelocity = [0, 100]
 
 
@@ -128,23 +146,21 @@ while not endGame:
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT: endGame = True #makes you able to close the script (don't remove this)
 
-    screen.fill((255,255,255)) #fill the screen with the RGB color
+    if not pauseGame:
+        screen.fill((255,255,255)) #fill the screen with the RGB color
 
-    object.detectClick()
-    object.drawBackground()
-    object.playerGravity()
-    object.drawEnemy()
+        object.detectClick()
+        object.drawBackground()
+        object.playerGravity()
+        object.drawEnemy()
+        object.winLose()
 
-    #for debugging:
-    print(object.objectVelocity, object.objectLocation, height - object.groundLevel[1], pygame.time.get_ticks())
+        #for debugging:
+        print("-" * 100)
+        print(object.enemyList)
 
-    screen.blit(image, [object.objectLocation[0], height - object.objectLocation[1] + 100])
+        pygame.draw.rect(screen, (100, 10, 10), object.objectHitbox)
+        screen.blit(image, [object.objectLocation[0], height - object.objectLocation[1] + 100]) #pygame.draw.rect(screen, (100,100,100), pygame.Rect(object.objectLocation[0], height - object.objectLocation[1] + 100, object.objectDimension[0], object.objectDimension[1]))
 
-    for y in list(object.enemyList.keys()):
-        for x in object.enemyList[y]:
-            pygame.draw.rect(screen, (10, 10, 10), pygame.Rect(x[1], 100 - (10 if x[0] == 1 else 12 if x[0] == 2 else 15), 10, 10 if x[0] == 1 else 12 if x[0] == 2 else 15)) 
-            print(x)
-
-    pygame.time.Clock().tick(frameRate) #should cap the fps
-    pygame.display.flip()
-    #pygame.display.update()
+        pygame.time.Clock().tick(frameRate) #should cap the fps
+        pygame.display.update() #pygame.display.flip()
