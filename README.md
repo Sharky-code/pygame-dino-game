@@ -8,3 +8,5 @@ A lot of things are still not implemented. For example:
 - need to add ducking animation
 - need to add the birds
 - need to get the cactus textures
+- add sounds
+- make it more readable (add variables then delete it)
