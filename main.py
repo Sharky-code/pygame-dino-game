@@ -5,11 +5,11 @@ features to add later:
 - add background scrolling
 - add animations (ADDED LEG ANIMATIONS)
 - easily change FLOOR level
+- sound
 """
 
 import pygame, random, copy
 
-from pygame.time import get_ticks
 width, height = 400, 200
 frameRate = 60
 pauseGame = False
@@ -41,7 +41,7 @@ class Button:
         #text stuff
         self.text = text
         self.font = font
-        self.orientation = orientation
+        self.orientation = orientation 
         self.fontSize = fontSize
         self.fontColor = fontColor
 
@@ -232,10 +232,10 @@ while not endGame:
         object.winLose()
     else:
         button.createButton()
+
         if button.detectClick():
             object.restart()
             pauseGame = False
-
 
     #for debugging:
     print("-" * 100)
